@@ -1,6 +1,9 @@
 from typing import Optional, Dict
-from pyhtmx import Div, Video
+from pyhtmx import Div, HTMLTag
 from pyhtmx_gui.kit import Widget, SessionItem, Page
+
+
+CACHE_DIR = "/cache/ovos.common_play/py-htmx"
 
 
 class LoadingWidget(Widget):
@@ -12,27 +15,34 @@ class LoadingWidget(Widget):
         self._title = Div(
             inner_content=session_data.get("title", "Searching Media"),
             _id="loading-title",
-            _class=(
-                "text-[4vw] font-black font-sans text-center "
-                "text-[currentColor] mb-4"
-            ),
+            _class=[
+                "text-[4vw]",
+                "font-sans",
+                "text-center",
+                "text-white",
+                "mb-4"
+            ],
         )
         self.add_interaction(
             "title",
             SessionItem(
-                parameter="title",
+                parameter="ld-title",
                 attribute="inner_content",
                 component=self._title,
             ),
         )
 
-        self._animation = Video(
+        self._animation: HTMLTag = HTMLTag(
+            "lottie-player",
             _id="loading-animation",
             _class="w-[60%] h-auto object-contain",
-            autoplay=True,
-            loop=True,
-            muted=True,
-            src="/static/animations/installing.webm",
+            autoplay="",
+            loop="",
+            src=f"{CACHE_DIR}/animations/installing.json",
+            style={
+                "width": "30vw",
+                "height": "30vw",
+            },
         )
 
         self._widget = Div(
@@ -41,10 +51,16 @@ class LoadingWidget(Widget):
                 self._animation,
             ],
             _id="loading-container",
-            _class=(
-                "flex flex-col items-center justify-center "
-                "h-full w-full p-8 bg-transparent"
-            ),
+            _class=[
+                "flex",
+                "flex-col",
+                "items-center",
+                "justify-center",
+                "h-full",
+                "w-full",
+                "p-8",
+                "bg-transparent",
+            ],
         )
 
 
@@ -59,7 +75,7 @@ class LoadingPage(Page):
         self._page = Div(
             loading_widget.widget,
             _id="loading-page",
-            _class="fade-in bg-white dark:bg-neutral-900",
+            _class="fade-in bg-gray-900",
             style={
                 "width": "80vw",
                 "height": "80vh",

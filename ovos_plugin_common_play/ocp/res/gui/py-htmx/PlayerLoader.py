@@ -4,6 +4,9 @@ from pyhtmx import Div, Button, Img
 from pyhtmx_gui.kit import Page, Widget, SessionItem, Control
 
 
+CACHE_DIR = "/cache/ovos.common_play/py-htmx"
+
+
 class MediaPlayerWidget(Widget):
     _parameters = ("title", "artist", "image", "position", "duration")
 
@@ -43,7 +46,8 @@ class MediaPlayerWidget(Widget):
             SessionItem(
                 parameter="image",
                 attribute="src",
-                component=self._image
+                component=self._image,
+                target_level="outerHTML",
             ),
         )
 
@@ -56,9 +60,9 @@ class MediaPlayerWidget(Widget):
         self.add_interaction(
             "title",
             SessionItem(
-                parameter="title",
+                parameter="tr-title",
                 attribute="inner_content",
-                component=self._title
+                component=self._title,
             ),
         )
 
@@ -73,7 +77,7 @@ class MediaPlayerWidget(Widget):
             SessionItem(
                 parameter="artist",
                 attribute="inner_content",
-                component=self._artist
+                component=self._artist,
             ),
         )
 
@@ -233,6 +237,5 @@ class PlayerLoader(Page):
             style={
                 "width": "100vw",
                 "height": "100vh",
-                "color": "white"
             },
         )
