@@ -99,14 +99,14 @@ class MediaPlayerWidget(Widget):
 
         # Tijd labels: huidige positie en totale lengte
         self._current_time_label = Div(
-            inner_content=self._format_time(position),
+            inner_content=MediaPlayerWidget._format_time(position),
             _id="current-time-label",
             _class="text-[1.5vw] text-white opacity-70 mr-auto",
             style={"width": "10vw"},
         )
 
         self._total_time_label = Div(
-            inner_content=self._format_time(duration),
+            inner_content=MediaPlayerWidget._format_time(duration),
             _id="total-time-label",
             _class="text-[1.5vw] text-white opacity-70 ml-auto",
             style={"width": "10vw"},
@@ -134,7 +134,7 @@ class MediaPlayerWidget(Widget):
                 parameter="position",
                 attribute="inner_content",
                 component=self._current_time_label,
-                format_value=lambda p: self._format_time(float(p)) if p else "00:00",
+                format_value=lambda p: MediaPlayerWidget._format_time(float(p)) if p else "00:00",
             ),
         )
         self.add_interaction(
@@ -143,7 +143,7 @@ class MediaPlayerWidget(Widget):
                 parameter="duration",
                 attribute="inner_content",
                 component=self._total_time_label,
-                format_value=lambda l: self._format_time(float(l)) if l else "00:00",
+                format_value=lambda l: MediaPlayerWidget._format_time(float(l)) if l else "00:00",
             ),
         )
 
@@ -222,16 +222,14 @@ class MediaPlayerWidget(Widget):
 
 
 class PlayerLoader(Page):
-    _is_page = True
-
     def __init__(self, session_data: Optional[Dict[str, Any]] = None):
         super().__init__(name="media-player-page", session_data=session_data)
 
-        widget = MediaPlayerWidget(session_data=session_data)
-        self.add_component(widget)
+        media_player_widget = MediaPlayerWidget(session_data=session_data)
+        self.add_component(media_player_widget)
 
         self._page = Div(
-            [widget._widget],
+            [media_player_widget.widget],
             _id="media-player-page",
             _class="flex flex-col items-center justify-center bg-gray-900",
             style={

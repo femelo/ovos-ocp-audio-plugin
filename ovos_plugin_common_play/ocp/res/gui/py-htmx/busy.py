@@ -20,7 +20,7 @@ class LoadingWidget(Widget):
                 "font-sans",
                 "text-center",
                 "text-white",
-                "mb-4"
+                "mb-4",
             ],
         )
         self.add_interaction(
@@ -74,7 +74,7 @@ class LoadingPage(Page):
         # Directly set the page content to the widget
         self._page = Div(
             Div(
-                loading_widget.widget,
+                [loading_widget.widget],
                 _id="loading-background",
                 _class="bg-neutral-900",
                 style={
