@@ -19,6 +19,9 @@ class VideoPlayerBackend(str, enum.Enum):
     NATIVE = "native"
 
 
+CACHE_DIR = "/cache/ovos.common_play/py-htmx"
+
+
 class OCPMediaPlayerGUI(GUIInterface):
     def __init__(self, bus=None):
         # the skill_id is chosen so the namespace matches the regular bus api
@@ -134,10 +137,10 @@ class OCPMediaPlayerGUI(GUIInterface):
         self["uri"] = self.player.now_playing.uri
         self["title"] = self.player.now_playing.title
         self["image"] = self.player.now_playing.image or \
-                        join(dirname(__file__), "res/gui/images/ocp.png")
+                        f"{CACHE_DIR}/images/ocp.png"
         self["artist"] = self.player.now_playing.artist
         self["bg_image"] = self.player.now_playing.bg_image or \
-                           join(dirname(__file__), "res/gui/images/ocp_bg.png")
+                           f"{CACHE_DIR}/images/ocp_bg.png"
         self["duration"] = self.player.now_playing.length
         self["position"] = self.player.now_playing.position
         # options below control the web player
