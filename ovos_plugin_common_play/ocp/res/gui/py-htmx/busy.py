@@ -73,14 +73,22 @@ class LoadingPage(Page):
 
         # Directly set the page content to the widget
         self._page = Div(
-            loading_widget.widget,
+            Div(
+                loading_widget.widget,
+                _id="loading-background",
+                _class="bg-neutral-900",
+                style={
+                    "width": "80vw",
+                    "height": "80vh",
+                    "border-radius": "1rem",
+                    "margin": "100px auto",
+                    "box-shadow": "0 0 15px rgba(0,0,0,0.1)",
+                },
+            ),
             _id="loading-page",
-            _class="fade-in bg-gray-900",
+            _class="fade-in bg-neutral-700",
             style={
-                "width": "80vw",
-                "height": "80vh",
-                "border-radius": "1rem",
-                "margin": "100px auto",
-                "box-shadow": "0 0 15px rgba(0,0,0,0.1)",
+                "width": "100vw",
+                "height": "100vh",
             },
         )
