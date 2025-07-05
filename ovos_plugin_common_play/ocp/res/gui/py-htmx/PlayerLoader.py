@@ -119,7 +119,7 @@ class MediaPlayerWidget(Widget):
         self.add_interaction(
             "position",
             SessionItem(
-                parameter="position",
+                parameter="position-fill",
                 attribute="style",
                 component=self._progress_fill,
                 format_value=lambda p: f"width:{(float(p) / max(duration, 1)) * 100:.2f}%" if p else "width:0%",
@@ -128,7 +128,7 @@ class MediaPlayerWidget(Widget):
         self.add_interaction(
             "position",
             SessionItem(
-                parameter="position",
+                parameter="position-label",
                 attribute="inner_content",
                 component=self._current_time_label,
                 format_value=lambda p: MediaPlayerWidget._format_time(float(p)) if p else "00:00",
@@ -137,7 +137,7 @@ class MediaPlayerWidget(Widget):
         self.add_interaction(
             "duration",
             SessionItem(
-                parameter="duration",
+                parameter="duration-label",
                 attribute="inner_content",
                 component=self._total_time_label,
                 format_value=lambda l: MediaPlayerWidget._format_time(float(l)) if l else "00:00",
