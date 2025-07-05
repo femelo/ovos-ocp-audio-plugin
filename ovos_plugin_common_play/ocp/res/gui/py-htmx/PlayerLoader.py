@@ -3,12 +3,11 @@ from typing import Any, Optional, Dict
 from pyhtmx import Div, Button, Img
 from pyhtmx_gui.kit import Page, Widget, SessionItem, Control
 
-
 CACHE_DIR = "/cache/ovos.common_play/py-htmx"
 
 
 class MediaPlayerWidget(Widget):
-    _parameters = ("title", "artist", "image", "position", "duration")
+    _parameters = ("title", "artist", "image", "position", "duration", "status")
 
     def __init__(self, session_data: Optional[Dict[str, Any]] = None):
         # Maak een kopie zodat we data kunnen transformeren zonder originele dict te wijzigen
@@ -117,7 +116,7 @@ class MediaPlayerWidget(Widget):
             [self._current_time_label, self._total_time_label],
             _class="flex flex-row justify-between w-[80vw] mb-4",
         )
-
+        
         # Interacties om progressbar en tijdlabels te updaten, nu met string seconds in session_data
         self.add_interaction(
             "position",
@@ -155,15 +154,12 @@ class MediaPlayerWidget(Widget):
             "hover:scale-110 border-2"
         )
 
-        btn_play = Button(
-            "▶️",
-            _id="btn-play",
-            _class=f"{common_classes} border border-gray-300 text-white hover:bg-white hover:text-black"
-        )
+        status = session_data.get("status", "")
+        toggle_icon = "⏸️" if status == "Playing" else "▶️"
 
-        btn_pause = Button(
-            "⏸️",
-            _id="btn-pause",
+        btn_toggle = Button(
+            toggle_icon,
+            _id="btn-toggle",
             _class=f"{common_classes} border border-gray-300 text-white hover:bg-white hover:text-black"
         )
 
@@ -179,9 +175,20 @@ class MediaPlayerWidget(Widget):
             _class=f"{common_classes} border border-gray-300 text-white hover:bg-white hover:text-black"
         )
 
+        # Toggle-knop click
+        self.add_interaction(
+            "toggle-click",
+            Control(
+                context="global",
+                event="click",
+                source=btn_toggle,
+                target=None,
+                callback=lambda r, *args: print("toggle clicked"),
+            ),
+        )
+
+        # Next / Prev click
         for btn, action in [
-            (btn_play, "play"),
-            (btn_pause, "pause"),
             (btn_next, "next"),
             (btn_prev, "prev")
         ]:
@@ -192,12 +199,23 @@ class MediaPlayerWidget(Widget):
                     event="click",
                     source=btn,
                     target=None,
-                    callback=lambda r, a=action: print(f"{a} clicked"),
+                    callback=lambda r, *args, a=action: print(f"{a} clicked"),
                 ),
             )
 
+        # Update toggle knop-icoon op basis van status
+        self.add_interaction(
+            "status",
+            SessionItem(
+                parameter="status",
+                attribute="inner_content",
+                component=btn_toggle,
+                format_value=lambda s: "⏸️" if s == "Playing" else "▶️"
+            ),
+        )
+
         controls = Div(
-            [btn_prev, btn_play, btn_pause, btn_next],
+            [btn_prev, btn_toggle, btn_next],
             _class="flex flex-row justify-center gap-[3vw] mt-6",
         )
 
