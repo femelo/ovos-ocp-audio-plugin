@@ -102,13 +102,13 @@ class MediaPlayerWidget(Widget):
             _id="current-time-label",
             _class="text-[1.5vw] text-white opacity-70",
         )
-        
+
         self._total_time_label = Div(
             inner_content=MediaPlayerWidget._format_time(duration),
             _id="total-time-label",
             _class="text-[1.5vw] text-white opacity-70",
         )
-        
+
         # Tijd labels container, flex row met space-between
         self._time_labels = Div(
             [self._current_time_label, self._total_time_label],
