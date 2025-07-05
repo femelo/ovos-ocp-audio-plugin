@@ -13,9 +13,6 @@ class SuggestionPage(Page):
             _class="text-white text-3xl p-4 bg-blue-800",
         )
 
-        # Voeg content toe aan de GUI componentenlijst
-        self.add_component(content)
-
         # Complete pagina-opmaak
         self._page = Div(
             content,
