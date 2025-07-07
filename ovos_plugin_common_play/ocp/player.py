@@ -40,6 +40,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.audio_service = None
         self._audio_backend = None
         self.track_history = {}  # Dict of track URI to play count
+        self.player_loaded: bool = False
 
         super().__init__(skill_id=skill_id, bus=bus, gui=gui,
                          resources_dir=resources_dir, **kwargs)
@@ -424,7 +425,10 @@ class OCPMediaPlayer(OVOSAbstractApplication):
             LOG.warning("Stream Validation Failed")
             self.on_invalid_media()
             return
-        self.gui.show_player()
+        # Only load player if not yet loaded
+        if not self.player_loaded:
+            self.gui.show_player()
+            self.player_loaded = True
 
         self.track_history.setdefault(self.now_playing.uri, 0)
         self.track_history[self.now_playing.uri] += 1
@@ -672,6 +676,7 @@ class OCPMediaPlayer(OVOSAbstractApplication):
         self.now_playing.shutdown()
         self.gui.shutdown()
         self.media.shutdown()
+        self.player_loaded = False
         self.remove_event('recognizer_loop:record_begin')
         self.remove_event('recognizer_loop:record_end')
         self.remove_event('gui.player.media.service.sync.status')
