@@ -239,15 +239,27 @@ class MediaPlayerWidget(Widget):
 
 class PlayerLoader(Page):
     def __init__(self, session_data: Optional[Dict[str, Any]] = None):
-        super().__init__(name="media-player-page", session_data=session_data)
+        super().__init__(name="player-page", session_data=session_data)
 
         media_player_widget = MediaPlayerWidget(session_data=session_data)
         self.add_component(media_player_widget)
 
+        # Add control to change to the next page
+        self.add_interaction(
+            "next-page-key-up",
+            Control(
+                context="global",
+                event="keyup[event.code === 'ArrowRight'] from:body",
+                callback=(
+                    lambda renderer, _: renderer.show_next()
+                ),
+            ),
+        )
+
         self._page = Div(
             [media_player_widget.widget],
             _id="media-player-page",
-            _class="flex flex-col items-center justify-center bg-gray-900",
+            _class="flex flex-col items-center justify-center bg-gray-900 fade-in",
             style={
                 "width": "100vw",
                 "height": "100vh",
