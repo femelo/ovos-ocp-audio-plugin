@@ -30,7 +30,19 @@ class MediaPlayerWidget(Widget):
 
         title = session_data.get("title", "Geen Titel")
         artist = session_data.get("artist", "Onbekende Artiest")
-        image = session_data.get("image", "")
+        original_image = session_data.get("image", "")
+        image = original_image
+        
+        # Try high resolution thumbnail
+        for quality in ["default", "hqdefault", "mqdefault", "sddefault"]:
+            if f"/{quality}.jpg" in original_image:
+                image = original_image.replace(f"/{quality}.jpg", "/maxresdefault.jpg")
+                break
+        
+        # Fallback to original image when maxres-url is missing
+        if not image:
+            image = original_image 
+
         position = float(session_data.get("position", "0"))
         duration = float(session_data.get("duration", "1"))  # default 1s om delen door nul te voorkomen
 
