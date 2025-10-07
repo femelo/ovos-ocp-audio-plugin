@@ -1,16 +1,22 @@
 import json
 import unittest
+from typing import Any
 
 from ovos_bus_client import Message
 from ovos_utils.messagebus import FakeBus
-from unittest.mock import Mock, MagicMock
+from unittest.mock import Mock
 
 from ovos_plugin_common_play.ocp import OCP
-from ovos_plugin_common_play.ocp.status import MediaType, PlayerState
+
+
+class WrappedFakeBus(FakeBus):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.emitted_msgs: list = []
 
 
 class TestOCP(unittest.TestCase):
-    bus = FakeBus()
+    bus = WrappedFakeBus()
     ocp = OCP(bus=bus, skill_id="TEST_OCP")
 
     @classmethod
@@ -46,11 +52,12 @@ class TestOCP(unittest.TestCase):
         self.assertIsInstance(resp, Message)
 
     def test_handle_home(self):
-        real_gui_home = self.ocp.gui.show_home
-        self.ocp.gui.show_home = Mock()
+        assert self.ocp.gui is not None
+        real_gui_home = self.ocp.gui.show_page
+        self.ocp.gui.show_page = Mock()
         self.ocp.handle_home()
-        self.ocp.gui.show_home.assert_called_once_with(app_mode=True)
-        self.ocp.gui.show_home = real_gui_home
+        self.ocp.gui.show_page.assert_called_once_with(app_mode=True)
+        self.ocp.gui.show_page = real_gui_home
 
     def test_register_ocp_events(self):
         # TODO

@@ -1,8 +1,14 @@
 from ovos_plugin_manager.templates.audio import AudioBackend
+from ovos_bus_client import MessageBusClient
 
 
 class TestMycroftAudioService(AudioBackend):
-    def __init__(self, config, bus, name='mycroft_test'):
+    def __init__(
+        self,
+        config: dict,
+        bus: MessageBusClient,
+        name: str = 'mycroft_test',
+    ) -> None:
         super().__init__(config, bus)
         self.config = config
         self.bus = bus
@@ -14,45 +20,54 @@ class TestMycroftAudioService(AudioBackend):
         self.playing = False
         self.ducked = False
 
-    def supported_uris(self):
+    def supported_uris(self) -> list[str]:
         return ['file', 'http']
 
-    def clear_list(self):
+    def clear_list(self) -> None:
         self.tracks = []
 
-    def add_list(self, tracks):
+    def add_list(self, tracks: list) -> None:
         self.tracks += tracks
 
-    def play(self, repeat=False):
+    def play(self, repeat: bool = False) -> None:
         self.index = 0
         self.playing = True
 
-    def stop(self):
+    def stop(self) -> bool:
         self.stopped = True
         self.playing = False
         return self.stopped
 
-    def pause(self):
+    def pause(self) -> None:
         self.paused = True
 
     def resume(self):
         self.paused = False
 
-    def next(self):
+    def next(self) -> None:
         # Terminate process to continue to next
         self.index += 1
 
-    def previous(self):
+    def previous(self) -> None:
         self.index -= 1
 
-    def lower_volume(self):
+    def lower_volume(self) -> None:
         self.ducked = True
 
-    def restore_volume(self):
+    def restore_volume(self) -> None:
         self.ducked = False
 
+    def get_track_length(self) -> int:
+        return 0
+    
+    def get_track_position(self) -> int:
+        return 0
 
-def load_service(base_config, bus):
+    def set_track_position(self, milliseconds: int) -> None:
+        pass
+
+
+def load_service(base_config: dict, bus: MessageBusClient) -> list:
     backends = base_config.get('backends', [])
     services = [(b, backends[b]) for b in backends
                 if backends[b]['type'] == 'mycroft_test' and

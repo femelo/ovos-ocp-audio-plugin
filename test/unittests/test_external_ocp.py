@@ -1,11 +1,8 @@
 import json
 import unittest
-from unittest.mock import patch
+from typing import Any
 
-from ovos_audio.service import AudioService
 from ovos_utils.messagebus import FakeBus
-
-from ovos_config.config import Configuration
 
 
 BASE_CONF = {"Audio":
@@ -33,8 +30,14 @@ BASE_CONF = {"Audio":
 }
 
 
+class WrappedFakeBus(FakeBus):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.emitted_msgs: list = []
+
+
 class TestExternalOCP(unittest.TestCase):
-    bus = FakeBus()
+    bus = WrappedFakeBus()
 
     @classmethod
     def setUpClass(cls) -> None:

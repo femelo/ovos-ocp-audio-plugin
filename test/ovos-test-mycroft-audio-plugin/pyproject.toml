@@ -1,0 +1,28 @@
+[build-system]
+requires = ["hatchling >= 1.26"]
+build-backend = "hatchling.build"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project]
+name = "ovos-test-mycroft-audio-plugin"
+keywords = ["ovos", "plugin", "audio"]
+version = "0.0.1"
+authors = [
+  { name="JarbasAi", email="jarbasai@mailfence.com" },
+]
+description = "Test audio plugin for ovos-core"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin"
+Issues = "https://github.com/OpenVoiceOS/ovos-ocp-audio-plugin/issues"
+
+[project.entry-points."mycroft.plugin.audioservice"]
+"ovos_test_mycroft_audio_plugin" = "ovos_test_mycroft_audio_plugin"

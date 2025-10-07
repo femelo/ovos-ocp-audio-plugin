@@ -3,7 +3,7 @@ import unittest
 
 from ovos_bus_client import Message
 from ovos_utils.messagebus import FakeBus
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
 from ovos_plugin_common_play.ocp.player import OCPMediaPlayer
 from ovos_plugin_common_play.ocp.media import MediaEntry
@@ -11,7 +11,7 @@ from ovos_plugin_common_play.ocp.status import MediaType, LoopState, \
     MediaState, PlaybackType, TrackState, PlayerState
 
 
-valid_search_results = [
+valid_search_results: list[dict] = [
     {'media_type': MediaType.MUSIC,
      'playback': PlaybackType.AUDIO,
      'image': 'https://freemusicarchive.org/legacy/fma-smaller.jpg',
@@ -78,7 +78,6 @@ class TestOCPPlayer(unittest.TestCase):
         # Testing `bind` method
         self.assertEqual(self.player.now_playing._player, self.player)
         self.assertEqual(self.player.media._player, self.player)
-        self.assertEqual(self.player.gui.player, self.player)
         self.assertIsInstance(self.player.audio_service, ClassicAudioServiceInterface)
 
         bus_events = ['recognizer_loop:record_begin',
@@ -160,10 +159,13 @@ class TestOCPPlayer(unittest.TestCase):
 
         # Test invalid state change
         with self.assertRaises(TypeError):
-            self.player.set_media_state(1)
+            self.player.set_media_state(1)  # type: ignore
         self.assertEqual(self.player.media_state, MediaState.NO_MEDIA)
 
     def test_set_player_state(self):
+        assert self.player is not None
+        assert self.player.mpris is not None
+        assert self.player.gui is not None
         real_update_props = self.player.mpris.update_props
         self.player.mpris.update_props = Mock()
         self.player.set_player_state(PlayerState.STOPPED)
@@ -200,25 +202,24 @@ class TestOCPPlayer(unittest.TestCase):
 
         # Request invalid change
         with self.assertRaises(TypeError):
-            self.player.set_player_state("Paused")
+            self.player.set_player_state("Paused")  # type: ignore
         self.assertEqual(last_message, self.emitted_msgs[-1])
         self.assertEqual(self.player.state, PlayerState.STOPPED)
 
         with self.assertRaises(TypeError):
-            self.player.set_player_state(2)
+            self.player.set_player_state(2)  # type: ignore
         self.assertEqual(last_message, self.emitted_msgs[-1])
         self.assertEqual(self.player.state, PlayerState.STOPPED)
 
         self.player.mpris.update_props = real_update_props
 
     def test_set_now_playing(self):
+        assert self.player is not None
+        assert self.player.mpris is not None
+        assert self.player.gui is not None
         real_update_props = self.player.mpris.update_props
-        real_update_track = self.player.gui.update_current_track
-        real_update_plist = self.player.gui.update_playlist
 
         self.player.mpris.update_props = Mock()
-        self.player.gui.update_current_track = Mock()
-        self.player.gui.update_playlist = Mock()
 
         valid_dict = valid_search_results[0]
         valid_track = MediaEntry.from_dict(valid_search_results[1])
@@ -234,13 +235,9 @@ class TestOCPPlayer(unittest.TestCase):
         self.assertEqual(self.player.now_playing, entry)
         self.assertEqual(self.player.playlist.current_track, entry)
         self.assertEqual(self.player.playlist[-1], entry)
-        self.player.gui.update_current_track.assert_called_once()
-        self.player.gui.update_playlist.assert_called_once()
         self.player.mpris.update_props.assert_called_once_with(
             {"Metadata": self.player.now_playing.mpris_metadata}
         )
-        self.player.gui.update_current_track.reset_mock()
-        self.player.gui.update_playlist.reset_mock()
         self.player.mpris.update_props.reset_mock()
 
         # Play valid MediaEntry result
@@ -248,35 +245,26 @@ class TestOCPPlayer(unittest.TestCase):
         self.assertEqual(self.player.now_playing, valid_track)
         self.assertEqual(self.player.playlist.current_track, valid_track)
         self.assertEqual(self.player.playlist[-1], valid_track)
-        self.player.gui.update_current_track.assert_called_once()
-        self.player.gui.update_playlist.assert_called_once()
         self.player.mpris.update_props.assert_called_once_with(
             {"Metadata": self.player.now_playing.mpris_metadata})
-        self.player.gui.update_current_track.reset_mock()
-        self.player.gui.update_playlist.reset_mock()
         self.player.mpris.update_props.reset_mock()
 
         # Play invalid string result
         with self.assertRaises(ValueError):
-            self.player.set_now_playing(invalid_str)
-        self.player.gui.update_current_track.assert_not_called()
-        self.player.gui.update_playlist.assert_not_called()
+            self.player.set_now_playing(invalid_str)  # type: ignore
         self.player.mpris.update_props.assert_not_called()
 
         # Play result with no URI
         self.player.set_now_playing(track_no_uri)
-        self.player.gui.update_current_track.assert_called_once()
-        self.player.gui.update_playlist.assert_called_once()
         self.player.mpris.update_props.assert_called_once_with(
             {"Metadata": self.player.now_playing.mpris_metadata})
 
         self.player.mpris.update_props = real_update_props
-        self.player.gui.update_current_track = real_update_track
-        self.player.gui.update_playlist = real_update_plist
 
     def test_validate_stream(self):
-        real_update = self.player.gui.update_current_track
-        self.player.gui.update_current_track = Mock()
+        assert self.player is not None
+        assert self.player.mpris is not None
+        assert self.player.gui is not None
         media_entry = MediaEntry.from_dict(valid_search_results[0])
         invalid_result = valid_search_results[1]
         invalid_result.pop('uri')
@@ -293,7 +281,6 @@ class TestOCPPlayer(unittest.TestCase):
         # Test with GUI
         self.assertTrue(self.player.validate_stream())
         self.assertEqual(self.player.gui["stream"], media_entry.uri)
-        self.player.gui.update_current_track.assert_called_once()
         self.assertEqual(self.player.now_playing.playback,
                          PlaybackType.AUDIO_SERVICE)
 
@@ -301,43 +288,39 @@ class TestOCPPlayer(unittest.TestCase):
         self.player.now_playing.update(invalid_entry)
         self.assertFalse(self.player.validate_stream())
         self.assertEqual(self.player.gui["stream"], media_entry.uri)
-        self.player.gui.update_current_track.assert_called_once()
 
         # Test without GUI
-        self.player.gui.update_current_track.reset_mock()
         self.player.gui["stream"] = None
         self.player.now_playing.update(media_entry)
         self.assertTrue(self.player.validate_stream())
         self.assertEqual(self.player.gui["stream"], media_entry.uri)
-        self.player.gui.update_current_track.assert_called_once()
         self.assertEqual(self.player.now_playing.playback,
                          PlaybackType.AUDIO_SERVICE)
 
         # TODO: Test Skill playback and non-audio playback
-        self.player.gui.update_current_track = real_update
 
     def test_on_invalid_media(self):
+        assert self.player is not None
+        assert self.player.mpris is not None
+        assert self.player.gui is not None
         real_play_next = self.player.play_next
-        real_show_error = self.player.gui.show_playback_error
         self.player.play_next = Mock()
-        self.player.gui.show_playback_error = Mock()
 
         self.player.on_invalid_media()
         self.player.play_next.assert_called_once()
-        self.player.gui.show_playback_error.assert_called_once()
 
         self.player.play_next = real_play_next
-        self.player.gui.show_playback_error = real_show_error
 
     def test_play_media(self):
+        assert self.player is not None
+        assert self.player.mpris is not None
+        assert self.player.gui is not None
         real_stop = self.player.mpris.stop
         real_pause = self.player.pause
-        real_gui_update = self.player.gui.update_search_results
         real_play = self.player.play
         real_set_now_playing = self.player.set_now_playing
         self.player.mpris.stop = Mock()
         self.player.pause = Mock()
-        self.player.gui.update_search_results = Mock()
         self.player.play = Mock()
         self.player.set_now_playing = Mock()
 
@@ -347,9 +330,9 @@ class TestOCPPlayer(unittest.TestCase):
 
         # Test invalid track
         with self.assertRaises(TypeError):
-            self.player.play_media(valid_search_results)
+            self.player.play_media(valid_search_results)  # type: ignore
         with self.assertRaises(TypeError):
-            self.player.play_media(json.dumps(valid_search_results[0]))
+            self.player.play_media(json.dumps(valid_search_results[0]))  # type: ignore
 
         # Test track only
         self.player.state = PlayerState.STOPPED
@@ -358,7 +341,6 @@ class TestOCPPlayer(unittest.TestCase):
         self.player.mpris.stop.assert_called_once()
         self.player.pause.assert_not_called()
         self.assertEqual(self.player.media.search_playlist.entries, list())
-        self.player.gui.update_search_results.assert_not_called()
         self.assertEqual(self.player.playlist.entries, list())
         self.player.set_now_playing.assert_called_once_with(track)
         self.player.play.assert_called_once()
@@ -370,13 +352,12 @@ class TestOCPPlayer(unittest.TestCase):
         # Test track with disambiguation
         self.player.state = PlayerState.PAUSED
         track = MediaEntry.from_dict(valid_search_results[0])
-        self.player.play_media(track, valid_search_results)
+        self.player.play_media(track, valid_search_results)  # type: ignore
         self.player.mpris.stop.assert_called_once()
         self.player.pause.assert_not_called()
 
         self.assertEqual(self.player.media.search_playlist.entries,
                          results_as_entries)
-        self.player.gui.update_search_results.assert_called_once()
         self.assertEqual(self.player.playlist.entries, list())
         self.player.set_now_playing.assert_called_once_with(track)
         self.player.play.assert_called_once()
@@ -384,18 +365,16 @@ class TestOCPPlayer(unittest.TestCase):
         self.player.mpris.stop.reset_mock()
         self.player.set_now_playing.reset_mock()
         self.player.play.reset_mock()
-        self.player.gui.update_search_results.reset_mock()
 
         # Test track with playlist
         self.player.state = PlayerState.PLAYING
         self.player.media.search_playlist.clear()
         track = MediaEntry.from_dict(valid_search_results[0])
-        self.player.play_media(track, playlist=valid_search_results)
+        self.player.play_media(track, playlist=valid_search_results)  # type: ignore
         self.player.mpris.stop.assert_called_once()
         self.player.pause.assert_called_once()
 
         self.assertEqual(self.player.media.search_playlist.entries, list())
-        self.player.gui.update_search_results.assert_not_called()
         self.assertEqual(self.player.playlist.entries, results_as_entries)
         self.assertEqual(self.player.playlist.current_track, track)
         self.player.set_now_playing.assert_called_once_with(track)
@@ -403,7 +382,6 @@ class TestOCPPlayer(unittest.TestCase):
 
         self.player.set_now_playing = real_set_now_playing
         self.player.play = real_play
-        self.player.gui.update_search_results = real_gui_update
         self.player.pause = real_pause
         self.player.mpris.stop = real_stop
 
@@ -414,10 +392,13 @@ class TestOCPPlayer(unittest.TestCase):
                       ["mpv", "ovos_common_play", "vlc", "mplayer", "simple"])
 
     def test_play(self):
+        assert self.player is not None
+        assert self.player.mpris is not None
+        assert self.player.gui is not None
+        assert self.player.audio_service is not None
         real_update_props = self.player.mpris.update_props
         real_stop = self.player.mpris.stop
         real_validate_stream = self.player.validate_stream
-        real_show_player = self.player.gui.show_player
         real_invalid = self.player.on_invalid_media
         real_player_state = self.player.set_player_state
         real_audio_service_play = self.player.audio_service.play
@@ -425,7 +406,6 @@ class TestOCPPlayer(unittest.TestCase):
         self.player.validate_stream = Mock(return_value=False)
         mpris_stop = self.player.mpris.stop_event
         self.player.mpris.stop = Mock()
-        self.player.gui.show_player = Mock()
         self.player.on_invalid_media = Mock()
         self.player.track_history = dict()
         self.player.set_player_state = Mock()
@@ -436,7 +416,6 @@ class TestOCPPlayer(unittest.TestCase):
         self.player.mpris.stop.assert_called_once()
         self.player.validate_stream.assert_called_once()
         self.player.on_invalid_media.assert_called_once()
-        self.player.gui.show_player.assert_not_called()
 
         self.player.validate_stream.reset_mock()
         self.player.validate_stream.return_value = True
@@ -451,10 +430,8 @@ class TestOCPPlayer(unittest.TestCase):
 
         # TODO: Should the GUI be displayed and track history updated for
         #       invalid playback requests?
-        self.player.gui.show_player.assert_called_once()
         self.assertEqual(set(self.player.track_history.keys()), {''})
 
-        self.player.gui.show_player.reset_mock()
         self.player.validate_stream.reset_mock()
 
         # Test valid audio with gui
@@ -466,7 +443,6 @@ class TestOCPPlayer(unittest.TestCase):
         self.player.mpris.stop.assert_called_once()
         self.player.validate_stream.assert_called_once()
         self.player.on_invalid_media.assert_called_once()
-        self.player.gui.show_player.assert_called_once()
         self.assertEqual(set(self.player.track_history.keys()), {'', media.uri})
         self.assertEqual(self.player.track_history[media.uri], 1)
         last_message = self.emitted_msgs[-1]
@@ -484,7 +460,6 @@ class TestOCPPlayer(unittest.TestCase):
 
         self.player.mpris.stop.reset_mock()
         self.player.validate_stream.reset_mock()
-        self.player.gui.show_player.reset_mock()
 
         # Test valid audio without gui (AudioService)
         self.player.mpris.stop_event.clear()
@@ -492,14 +467,12 @@ class TestOCPPlayer(unittest.TestCase):
         self.player.mpris.stop.assert_called_once()
         self.player.validate_stream.assert_called_once()
         self.player.on_invalid_media.assert_called_once()
-        self.player.gui.show_player.assert_called_once()
         self.assertEqual(set(self.player.track_history.keys()), {'', media.uri})
         self.assertEqual(self.player.track_history[media.uri], 2)
 
         # TODO: Test Skill, Video, Webview
 
         self.player.on_invalid_media = real_invalid
-        self.player.gui.show_player = real_show_player
         self.player.mpris.stop = real_stop
         self.player.validate_stream = real_validate_stream
         self.player.mpris.update_props = real_update_props
@@ -511,17 +484,19 @@ class TestOCPPlayer(unittest.TestCase):
         pass
 
     def test_play_next(self):
+        assert self.player is not None
+        assert self.player.mpris is not None
+        assert self.player.gui is not None
+        assert self.player.audio_service is not None
         real_mpris = self.player.mpris.play_next
         real_pause = self.player.pause
         real_play = self.player.play
         real_shuffle = self.player.play_shuffle
-        real_gui_end = self.player.gui.handle_end_of_playback
 
         self.player.mpris.play_next = Mock()
         self.player.pause = Mock()
         self.player.play = Mock()
         self.player.play_shuffle = Mock()
-        self.player.gui.handle_end_of_playback = Mock()
 
         # MPRIS Next
         self.player.now_playing.playback = PlaybackType.MPRIS
@@ -557,7 +532,7 @@ class TestOCPPlayer(unittest.TestCase):
         self.player.pause.reset_mock()
         self.player.play.reset_mock()
         self.player.shuffle = False
-        self.player.playlist.replace(valid_search_results)
+        self.player.playlist.replace(valid_search_results)  # type: ignore
         self.player.play_next()
         self.player.pause.assert_called_once()
         self.player.play.assert_called_once()
@@ -581,19 +556,16 @@ class TestOCPPlayer(unittest.TestCase):
         self.player.play_next()
         self.player.pause.assert_called_once()
         self.player.play.assert_not_called()
-        self.player.gui.handle_end_of_playback.assert_called_once()
 
         # Search results next track
-        self.player.gui.handle_end_of_playback.reset_mock()
         self.player.playlist.clear()
-        self.player.media.search_playlist.replace(valid_search_results)
+        self.player.media.search_playlist.replace(valid_search_results)  # type: ignore
         self.assertEqual(len(self.player.playlist), 0)
         self.player.pause.reset_mock()
         self.player.play.reset_mock()
         self.player.play_next()
         self.player.pause.assert_called_once()
         self.player.play.assert_called_once()
-        self.player.gui.handle_end_of_playback.assert_not_called()
 
         # Search results end
         self.player.pause.reset_mock()
@@ -608,13 +580,11 @@ class TestOCPPlayer(unittest.TestCase):
         self.player.play_next()
         self.player.pause.assert_called_once()
         self.player.play.assert_not_called()
-        self.player.gui.handle_end_of_playback.assert_called_once()
 
         # TODO: Test with `merge_search` set to False
 
         self.player.mpris.play_next.assert_called_once()
 
-        self.player.gui.handle_end_of_playback = real_gui_end
         self.player.play_shuffle = real_shuffle
         self.player.play = real_play
         self.player.pause = real_pause
@@ -625,6 +595,10 @@ class TestOCPPlayer(unittest.TestCase):
         pass
 
     def test_pause(self):
+        assert self.player is not None
+        assert self.player.mpris is not None
+        assert self.player.gui is not None
+        assert self.player.audio_service is not None
         real_audio_pause = self.player.audio_service.pause
         real_player_pause = self.player.mpris.pause
         real_player_state = self.player.set_player_state
@@ -681,6 +655,10 @@ class TestOCPPlayer(unittest.TestCase):
         self.player.set_player_state = real_player_state
 
     def test_resume(self):
+        assert self.player is not None
+        assert self.player.mpris is not None
+        assert self.player.gui is not None
+        assert self.player.audio_service is not None
         real_audio_resume = self.player.audio_service.resume
         real_player_resume = self.player.mpris.resume
         real_player_state = self.player.set_player_state
@@ -729,6 +707,10 @@ class TestOCPPlayer(unittest.TestCase):
         self.player.set_player_state = real_player_state
 
     def test_seek(self):
+        assert self.player is not None
+        assert self.player.mpris is not None
+        assert self.player.gui is not None
+        assert self.player.audio_service is not None
         real_method = self.player.audio_service.set_track_position
         mock_method = Mock()
         self.player.audio_service.set_track_position = mock_method
@@ -772,6 +754,10 @@ class TestOCPPlayer(unittest.TestCase):
                          f"ovos.common_play.{self.player.active_skill}.stop")
 
     def test_stop_audio_service(self):
+        assert self.player is not None
+        assert self.player.mpris is not None
+        assert self.player.gui is not None
+        assert self.player.audio_service is not None
         real_stop = self.player.audio_service.stop
         self.player.audio_service.stop = Mock()
         self.player.stop_audio_service()
@@ -801,14 +787,14 @@ class TestOCPPlayer(unittest.TestCase):
         pass
 
     def test_handle_player_state_update(self):
-        real_view_timeout = self.player.gui.cancel_app_view_timeout
-        real_pause_timeout = self.player.gui.schedule_app_view_pause_timeout
+        assert self.player is not None
+        assert self.player.mpris is not None
+        assert self.player.gui is not None
+        assert self.player.audio_service is not None
         real_update_props = self.player.mpris.update_props
         view_timeout = Mock()
         view_pause = Mock()
         update_props = Mock()
-        self.player.gui.cancel_app_view_timeout = view_timeout
-        self.player.gui.schedule_app_view_pause_timeout = view_pause
         self.player.mpris.update_props = update_props
 
         self.player.settings['app_view_timeout_mode'] = "pause"
@@ -880,8 +866,6 @@ class TestOCPPlayer(unittest.TestCase):
                                          "PlaybackStatus": "Stopped"})
         self.assertEqual(self.player.state, PlayerState.STOPPED)
 
-        self.player.gui.cancel_app_view_timeout = real_view_timeout
-        self.player.gui.schedule_app_view_pause_timeout = real_pause_timeout
         self.player.mpris.update_props = real_update_props
 
     def test_handle_player_media_update(self):

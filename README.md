@@ -1,6 +1,6 @@
 # OCP - OVOS Common Play
 
-![](./ovos_plugin_common_play/ocp/res/desktop/OCP.png) 
+![](./src/ovos_plugin_common_play/ocp/res/desktop/OCP.png) 
 
 
 OVOS Common Play is a full-fledged voice media player packaged as a mycroft audio plugin.

@@ -1,4 +1,4 @@
-from ovos_plugin_common_play.ocp.search import OCPQuery, MediaType
+from ovos_plugin_common_play.ocp.search import OCPQuery
 from pprint import pprint
 
 
@@ -11,4 +11,3 @@ with OCPQuery("metallica") as search:
                if r["match_confidence"] >= 25]
         if res:
             pprint(res)
-
