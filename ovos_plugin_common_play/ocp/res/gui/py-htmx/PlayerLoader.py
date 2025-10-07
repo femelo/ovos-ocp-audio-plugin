@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import Any, Optional, Dict
-from pyhtmx import Div, Button, Img
+from pyhtmx import Div, Button, Img  # type: ignore
 from pyhtmx_gui.kit import Page, Widget, SessionItem, Control
 
 CACHE_DIR = "/cache/ovos.common_play/py-htmx"
@@ -50,7 +50,7 @@ class MediaPlayerWidget(Widget):
         self.add_interaction(
             "image",
             SessionItem(
-                parameter="image",
+                parameter="track-image",
                 attribute="src",
                 component=self._image,
                 target_level="outerHTML",

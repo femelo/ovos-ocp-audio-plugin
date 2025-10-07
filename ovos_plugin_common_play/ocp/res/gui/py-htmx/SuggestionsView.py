@@ -1,5 +1,5 @@
 from typing import Optional, Dict
-from pyhtmx import Div
+from pyhtmx import Div  # type: ignore
 from pyhtmx_gui.kit import Page, Control
 
 
