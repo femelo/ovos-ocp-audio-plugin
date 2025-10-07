@@ -31,8 +31,8 @@ class MediaPlayerWidget(Widget):
         title = session_data.get("title", "Geen Titel")
         artist = session_data.get("artist", "Onbekende Artiest")
         original_image = session_data.get("image", "")
-        image = original_image        
-        # Try high-res thumbnail if it's a YouTube-thumbnail
+        image = original_image
+        # Try high-res thumbnail if it's a YouTube-thumbnailq
         if "img.youtube.com" in original_image:
             for quality in ["default", "hqdefault", "mqdefault", "sddefault"]:
                 if f"/{quality}.jpg" in original_image:
