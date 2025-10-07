@@ -27,7 +27,10 @@ class OCPAudioBackend(OCPAudioPlayerBackend):
 
     @property
     def player(self):
-        return self.ocp.player
+        if self.ocp:
+            return self.ocp.player
+        else:
+            return None
 
     def create_ocp(self, config: dict):
         self.config = config
